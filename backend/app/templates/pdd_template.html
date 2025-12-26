@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ process_name }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-align: center;
+            border-bottom: 3px solid #dc3545;
+            padding-bottom: 15px;
+        }
+
+        .document-type {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        h2 {
+            color: #dc3545;
+            font-size: 20px;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        h3 {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+
+        h4 {
+            color: #495057;
+            font-size: 16px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-content {
+            margin-left: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .diagram-container {
+            margin: 30px 0;
+            padding: 25px;
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .diagram-container h2 {
+            margin-top: 0;
+            border-bottom: 2px solid #dc3545;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #dc3545;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .info-box {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .warning-box {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .diagram-container {
+                page-break-inside: avoid;
+            }
+
+            h2 {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ process_name }}</h1>
+        <p class="document-type">Process Definition Document (PDD)</p>
+
+        {% if diagram_code %}
+        <div class="diagram-container">
+            <h2>Process Flow Diagram</h2>
+            <div class="mermaid">
+{{ diagram_code }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% for section in sections %}
+        <div class="section">
+            {% if section.name == "Project Name" %}
+                <h1>{{ section.content }}</h1>
+            {% elif "Purpose" in section.name or "Objectives" in section.name or "Key Contacts" in section.name or "Pre-requisites" in section.name %}
+                <h3>{{ section.name }}</h3>
+                <div class="section-content">{{ section.content | safe }}</div>
+            {% elif "AS IS" in section.name and "Overview" in section.name %}
+                <h2>AS IS Process Description</h2>
+                <h3>{{ section.name }}</h3>
+                <div class="section-content">{{ section.content | safe }}</div>
+            {% elif "TO BE" in section.name and "Overview" in section.name %}
+                <h2>TO BE Process Description</h2>
+                <h3>{{ section.name }}</h3>
+                <div class="section-content">{{ section.content | safe }}</div>
+            {% elif "AS IS Process Map" in section.name or "TO BE Process Map" in section.name %}
+                <h3>{{ section.name }}</h3>
+                <div class="section-content">{{ section.content | safe }}</div>
+            {% elif "High Level" in section.name or "Detailed Process Map" in section.name %}
+                <h4>{{ section.name }}</h4>
+                <div class="section-content">{{ section.content | safe }}</div>
+            {% elif "Exceptions Handling" in section.name or "Reporting" in section.name or "Other" in section.name %}
+                <h2>{{ section.name }}</h2>
+            {% elif "Known" in section.name or "Unknown" in section.name %}
+                <h4>{{ section.name }}</h4>
+                <div class="section-content">{{ section.content | safe }}</div>
+            {% else %}
+                <h3>{{ section.name }}</h3>
+                <div class="section-content">{{ section.content | safe }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div style="margin-top: 50px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; color: #666; font-size: 12px;">
+            <p>Generated by AI-Powered PDD Generator | UiPath RPA Documentation</p>
+        </div>
+    </div>
+
+    {% if diagram_code %}
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

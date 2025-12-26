@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+jinja2
+langchain-openai
+pyyaml
+pypdf
+python-docx
+ffmpeg-python
+openai
+python-multipart

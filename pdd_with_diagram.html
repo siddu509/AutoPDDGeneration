@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Name: Invoice Verification and Approval Process</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 22px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-content {
+            margin-left: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .diagram-container {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            overflow-x: auto;
+        }
+
+        .diagram-container h2 {
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+        }
+
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .diagram-container {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Process Design Document (PDD)</h1>
+
+        
+        <div class="diagram-container">
+            <h2>Process Flow Diagram</h2>
+            <div class="mermaid">
+graph TD
+    A[Start]
+    B[Receive Invoice]
+    C[Open Attachment]
+    D[Verify Amount]
+    E{Amount <= $1000?}
+    F[Manager Approval]
+    G[Enter Invoice in ERP]
+    H[Input Details]
+    I[Mark for Payment]
+    J[Submit Entry]
+    K[Confirm Submission]
+    L[Close Email & ERP]
+    M[End]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --|Yes| --> G
+    E --|No| --> F
+    F --> G
+    G --> H
+    H --> I
+    I --> J
+    J --> K
+    K --> L
+    L --> M
+            </div>
+        </div>
+        
+
+        
+        <div class="section">
+            <h2>Process Name</h2>
+            <div class="section-content">Process Name: Invoice Verification and Approval Process</div>
+        </div>
+        
+        <div class="section">
+            <h2>Process Description</h2>
+            <div class="section-content">The purpose of this process is to ensure accurate and efficient handling of invoices received via email. It involves verifying the invoice amount against the purchase order, obtaining necessary approvals for amounts over $1000, and entering approved invoices into the ERP system for payment. This process aims to maintain financial accuracy and streamline the payment workflow.</div>
+        </div>
+        
+        <div class="section">
+            <h2>Actors & Systems</h2>
+            <div class="section-content">**Actors & Systems:**
+
+- **Human Roles (Actors):**
+  - Finance Clerk
+  - Manager
+
+- **Software Systems:**
+  - Email System
+  - ERP System</div>
+        </div>
+        
+        <div class="section">
+            <h2>Input Data</h2>
+            <div class="section-content">**Input Data:**
+
+1. **Invoice PDF**: The primary document received as an email attachment, containing details such as the invoice amount, vendor information, and invoice number.
+
+2. **Email**: The medium through which the invoice is received, providing context such as the sender's information and any additional instructions or notes related to the invoice.
+
+3. **Purchase Order (PO) Data**: A reference document or system data used to verify the invoice amount. This may be accessed from a database, spreadsheet, or ERP system to ensure the invoice matches the agreed terms.
+
+4. **ERP System Access**: Required for entering the approved invoice details into the system for payment processing. This includes access to the relevant modules for data entry and approval tracking.
+
+5. **Manager Approval (if applicable)**: For invoices over $1000, additional input in the form of manager approval is required, which may be documented via email, a digital approval system, or a signed document.</div>
+        </div>
+        
+        <div class="section">
+            <h2>Output Data</h2>
+            <div class="section-content">Output Data:
+
+1. **Updated Record in ERP System**: Once the invoice is approved, it is entered into the ERP system, updating the records to reflect the new invoice and its status.
+
+2. **Confirmation Email**: A confirmation email may be sent to relevant stakeholders (e.g., the vendor or internal departments) indicating that the invoice has been approved and entered into the system for payment.
+
+3. **Approval Record**: If the invoice amount is over $1000, a record of the manager's approval is generated and stored, either within the ERP system or as part of the email communication.
+
+4. **Payment Marking**: The invoice is marked for payment in the ERP system, indicating that it is ready to be processed for payment according to the organization's payment schedule.
+
+5. **Audit Trail**: An audit trail or log entry is created, documenting the steps taken during the invoice processing, including verification, approval, and entry into the ERP system.</div>
+        </div>
+        
+        <div class="section">
+            <h2>Detailed Process Steps</h2>
+            <div class="section-content">### Detailed Process Steps
+
+1. **Receive Invoice via Email**
+   - Open the email client.
+   - Navigate to the inbox.
+   - Locate the email containing the invoice attachment.
+
+2. **Open Email Attachment**
+   - Click on the email to open it.
+   - Identify the attachment within the email.
+   - Click on the attachment to open the invoice document.
+
+3. **Verify Invoice Amount**
+   - Review the invoice document to locate the invoice amount.
+   - Open the corresponding purchase order document.
+   - Compare the invoice amount with the amount on the purchase order.
+
+4. **Determine Approval Requirement**
+   - Check if the invoice amount is $1000 or less.
+     - If yes, proceed to step 6.
+     - If no, proceed to step 5.
+
+5. **Obtain Manager Approval (if required)**
+   - Forward the email with the invoice attachment to the manager.
+   - Include a request for approval in the email body.
+   - Wait for the manager to review and respond with approval.
+   - Once approval is received, proceed to step 6.
+
+6. **Enter Invoice into ERP System**
+   - Open the ERP system on your computer.
+   - Navigate to the 'Invoices' section.
+   - Click on 'New Invoice' or equivalent option to create a new entry.
+
+7. **Input Invoice Details**
+   - Enter the invoice number into the 'InvoiceID' field.
+   - Enter the invoice date into the 'Date' field.
+   - Enter the vendor name into the 'Vendor' field.
+   - Enter the invoice amount into the 'Amount' field.
+   - Attach a digital copy of the invoice to the ERP entry, if required.
+
+8. **Mark Invoice for Payment**
+   - Locate the 'Payment Status' or equivalent field.
+   - Select 'Approved for Payment' from the dropdown menu or options list.
+
+9. **Submit Invoice Entry**
+   - Review all entered information for accuracy.
+   - Click the 'Submit' button to finalize the invoice entry in the ERP system.
+
+10. **Confirm Submission**
+    - Verify that the invoice entry appears in the list of pending payments.
+    - Ensure that the status reflects 'Approved for Payment'.
+
+11. **Close Email and ERP System**
+    - Close the email client.
+    - Log out of the ERP system.
+    - Close the ERP application.</div>
+        </div>
+        
+        <div class="section">
+            <h2>Business Rules & Exceptions</h2>
+            <div class="section-content">**Business Rules & Exceptions:**
+
+- An invoice is processed when received via email.
+- The finance clerk is responsible for opening the email attachment containing the invoice.
+- The invoice amount must be verified against the purchase order.
+- If the invoice amount is correct and under $1000, the finance clerk can approve it for payment.
+- If the invoice amount is over $1000, manager approval is required before payment can be processed.
+- Once approved, the invoice must be entered into the ERP system.
+- The invoice must be marked for payment after entry into the ERP system.
+
+**Potential Exceptions or Error Conditions:**
+
+- If the invoice amount does not match the purchase order, it cannot be approved for payment.
+- If the invoice amount is over $1000 and does not have manager approval, it cannot be processed for payment.
+- If the invoice is not entered into the ERP system, it cannot be marked for payment.</div>
+        </div>
+        
+    </div>
+
+    
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+    
+</body>
+</html>

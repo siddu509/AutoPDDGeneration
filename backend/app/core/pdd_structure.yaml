@@ -1,0 +1,63 @@
+sections:
+  # INTRODUCTION SECTION
+  - name: "Project Name"
+    prompt: "Extract or create a concise project name based on the process being automated."
+
+  - name: "Purpose"
+    prompt: "Explain that this Process Definition Document outlines the business process chosen for automation. Describe the sequence of actions, conditions and rules of the process prior to automation (AS IS) as well as the new sequence of actions after automation (TO BE). Mention that the PDD is a communication document between the RPA Business Analyst, SME/Process Owner, and the Development team."
+
+  - name: "Objectives"
+    prompt: "List the business objectives and benefits expected after automation of the selected business process. Include specific metrics like 'Reduce processing time by X%', 'Better monitoring through logs', 'Reduce errors', etc. Format as a bulleted list."
+
+  - name: "Key Contacts"
+    prompt: "List the stakeholders that need to be informed or to approve changes to the process. Include roles such as Process Owner, Business Analyst, Solution Architect, Development Lead, etc."
+
+  - name: "Minimum Pre-requisites for the Automation"
+    prompt: "List all minimum pre-requisites needed for the automation to work, such as system access, credentials, network requirements, software installations, permissions, etc."
+
+  # AS IS PROCESS SECTION
+  - name: "Process Overview (AS IS)"
+    prompt: "Provide general information about the process before automation. Include the process frequency, volume of transactions, departments involved, and current pain points. Format as a structured overview."
+
+  - name: "Applications Used (AS IS)"
+    prompt: "List all applications and systems used in the current process, including their purpose (e.g., SAP for data entry, Outlook for emails, Excel for reporting). Format as a table or structured list."
+
+  - name: "High Level Process Map (AS IS)"
+    prompt: "Describe the high-level process flow at a macro level, suitable for presentations with management. Focus on major steps and decision points without going into technical details."
+
+  - name: "Detailed Process Map (AS IS)"
+    prompt: "Describe the process at a detailed, key-stroke level suitable for developers. Include specific UI actions like 'Click Submit button', 'Enter value in field X', 'Navigate to menu Y', etc."
+
+  - name: "Detailed As Is Process Actions"
+    prompt: "Provide a comprehensive, step-by-step breakdown of all actions performed in the current process. Include every click, data entry, verification, and decision point. Number each step and be very specific."
+
+  # TO BE PROCESS SECTION
+  - name: "Process Overview (TO BE)"
+    prompt: "Describe how the process will work after automation. Include which steps will be automated, which remain manual, and the overall flow of the automated solution."
+
+  - name: "Detailed TO BE Process Map"
+    prompt: "Describe the detailed process flow post-automation. Clearly mark which steps are performed by the robot (use indicators like [BOT] or [AUTOMATED]) versus manual steps. Mention any process improvements made."
+
+  - name: "RPA Interventions and Automation Scope"
+    prompt: "List all specific actions that will be automated by the RPA robot. For each intervention, specify what the robot does, which applications it interacts with, and any decision logic it follows."
+
+  # EXCEPTIONS HANDLING SECTION
+  - name: "Known Business Exceptions"
+    prompt: "List all known business exceptions that can be anticipated. For each exception, describe the scenario, the conditions that trigger it, and exactly how the robot should handle it (e.g., retry logic, skip to next item, send notification, etc.)."
+
+  - name: "Unknown Business Exceptions"
+    prompt: "Describe the umbrella rule for handling unexpected exceptions that cannot be anticipated. Specify what the robot should do (e.g., take screenshot, send email with details to exceptions@company.com, log the error, move to next transaction, etc.)."
+
+  - name: "Known Applications Errors and Exceptions"
+    prompt: "List all known application errors, warnings, or notifications that might occur. For each, specify the error condition and the exact action the robot should take (e.g., retry 3 times, clear cache, restart application, notify administrator)."
+
+  - name: "Unknown Applications Errors and Exceptions"
+    prompt: "Describe the fallback strategy for unknown application errors. Specify how many retry attempts, what logging to perform, who to notify, and whether the process should terminate or continue."
+
+  # REPORTING SECTION
+  - name: "Reporting Requirements"
+    prompt: "Detail all reporting requirements for tracking the performance of the RPA solution. Include what metrics to track (success rate, processing time, error counts), how often reports should be generated, who should receive them, and in what format."
+
+  # ADDITIONAL SECTION
+  - name: "Additional Sources of Process Documentation"
+    prompt: "List any additional materials created to support the process automation, such as training documents, SOPs, video recordings, test cases, or other reference materials."
