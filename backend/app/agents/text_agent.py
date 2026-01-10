@@ -56,7 +56,14 @@ def extract_pdd_sections(text_content: str) -> List[Dict[str, str]]:
 Process Description:
 {text_content}
 
-Please provide the content for the '{section_name}' section based on the process description above."""
+Please provide the content for the '{section_name}' section based on the process description above.
+
+IMPORTANT FORMATTING INSTRUCTIONS:
+- Use HTML tags for formatting: <p> for paragraphs, <ul> and <li> for bulleted lists, <ol> and <li> for numbered lists
+- Use <strong> for bold text and <em> for italic text
+- DO NOT include markdown formatting (no **, no ##, no - for lists)
+- DO NOT repeat the section name/title in your response - start directly with the content
+- DO NOT include any preamble or introduction - start immediately with the actual content"""
 
             # Invoke the LLM
             response = llm.invoke(full_prompt)

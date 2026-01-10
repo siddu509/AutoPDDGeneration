@@ -1,68 +1,46 @@
 import { useState } from 'react'
+import React from 'react'
 import axios from 'axios'
 import PDDSection from './components/PDDSection'
 import DiagramViewer from './components/DiagramViewer'
-import ChatWidget from './components/ChatWidget'
 import './App.css'
 
 function App() {
   const [processText, setProcessText] = useState('')
   const [uploadedFile, setUploadedFile] = useState(null)
-  const [generatedPDD, setGeneratedPDD] = useState(null) // For HTML mode
-  const [pddData, setPddData] = useState(null) // For interactive mode
+  const [pddData, setPddData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [inputMode, setInputMode] = useState('text') // 'text' or 'file'
-  const [viewMode, setViewMode] = useState('html') // 'html' or 'interactive'
 
-  const generatePDD = async (useJsonApi = false) => {
-    if (inputMode === 'text' && !processText.trim()) {
-      setError('Please enter a process description')
-      return
-    }
-
-    if (inputMode === 'file' && !uploadedFile) {
-      setError('Please upload a file')
+  const generatePDD = async () => {
+    if (!processText.trim() && !uploadedFile) {
+      setError('Please enter a process description or upload a file')
       return
     }
 
     setLoading(true)
     setError('')
-    setGeneratedPDD(null)
     setPddData(null)
 
     try {
-      if (inputMode === 'text') {
-        if (useJsonApi) {
-          // Use JSON API for interactive mode
-          const response = await axios.post('/api/generate-pdd-json', {
-            process_text: processText
-          })
-          setPddData(response.data)
-        } else {
-          // Use HTML API for classic mode
-          const response = await axios.post('/generate-pdd', {
-            process_text: processText
-          }, {
-            headers: { 'Content-Type': 'application/json' }
-          })
-          setGeneratedPDD(response.data)
-        }
-      } else {
-        // File upload
+      if (uploadedFile) {
+        // File upload takes priority, but we can also include text
         const formData = new FormData()
         formData.append('file', uploadedFile)
 
-        const endpoint = useJsonApi ? '/api/upload-and-process-json' : '/upload-and-process'
-        const response = await axios.post(endpoint, formData, {
+        const response = await axios.post('/api/upload-and-process-json', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
 
-        if (useJsonApi) {
-          setPddData(response.data)
-        } else {
-          setGeneratedPDD(response.data)
-        }
+        // If there's also text, we could append it or use it as context
+        // For now, file processing is standalone
+        setPddData(response.data)
+      } else if (processText.trim()) {
+        // Text-only input
+        const response = await axios.post('/api/generate-pdd-json', {
+          process_text: processText
+        })
+        setPddData(response.data)
       }
     } catch (err) {
       console.error('Error generating PDD:', err)
@@ -81,7 +59,6 @@ function App() {
   const clearForm = () => {
     setProcessText('')
     setUploadedFile(null)
-    setGeneratedPDD(null)
     setPddData(null)
     setError('')
   }
@@ -93,7 +70,7 @@ function App() {
       const fileExtension = '.' + file.name.split('.').pop().toLowerCase()
 
       if (!allowedTypes.includes(fileExtension)) {
-        setError(`Unsupported file type: ${fileExtension}. Please use PDF, DOCX, or MP4.`)
+        setError(`Unsupported file type: ${fileExtension}. Please use PDF, DOCX, MP4, MOV, or AVI.`)
         setUploadedFile(null)
         return
       }
@@ -101,6 +78,10 @@ function App() {
       setUploadedFile(file)
       setError('')
     }
+  }
+
+  const handleRemoveFile = () => {
+    setUploadedFile(null)
   }
 
   const handleSectionRefine = (sectionName, newContent) => {
@@ -120,7 +101,6 @@ function App() {
     setLoading(true)
     try {
       if (format === 'pdf') {
-        // For PDF, open in new window and trigger print
         const response = await axios.post('/api/export-pdd', {
           process_name: pddData.process_name,
           sections: pddData.sections,
@@ -128,7 +108,6 @@ function App() {
           format: format
         })
 
-        // Open in new window and print
         const printWindow = window.open('', '_blank')
         printWindow.document.write(response.data)
         printWindow.document.close()
@@ -136,7 +115,6 @@ function App() {
           printWindow.print()
         }, 500)
       } else {
-        // For Word and HTML, download the file
         const response = await axios.post('/api/export-pdd', {
           process_name: pddData.process_name,
           sections: pddData.sections,
@@ -146,13 +124,11 @@ function App() {
           responseType: 'blob'
         })
 
-        // Create blob and download
         const blob = new Blob([response.data])
         const url = URL.createObjectURL(blob)
         const a = window.document.createElement('a')
         a.href = url
 
-        // Set file extension based on format
         const extensions = {
           'docx': 'docx',
           'html': 'html'
@@ -182,83 +158,55 @@ function App() {
         </header>
 
         <div className="input-section">
-          {/* View Mode Toggle */}
-          <div className="mode-toggle">
-            <button
-              className={`mode-btn ${viewMode === 'html' ? 'active' : ''}`}
-              onClick={() => setViewMode('html')}
-            >
-              Classic View
-            </button>
-            <button
-              className={`mode-btn ${viewMode === 'interactive' ? 'active' : ''}`}
-              onClick={() => setViewMode('interactive')}
-            >
-              Interactive View
-            </button>
-          </div>
+          <label htmlFor="process-text" className="label">
+            Process Description (Optional)
+          </label>
+          <textarea
+            id="process-text"
+            className="textarea"
+            placeholder="Enter your process description here...&#10;&#10;Example:&#10;The invoice processing process begins when an invoice is received via email. The finance clerk opens the email attachment and verifies the invoice amount against the purchase order. If the amount is correct and under $1000, they approve it for payment. If the amount is over $1000, manager approval is required. Once approved, the invoice is entered into the ERP system and marked for payment.&#10;&#10;You can also upload a document or video below."
+            value={processText}
+            onChange={(e) => setProcessText(e.target.value)}
+            rows={8}
+            disabled={loading}
+          />
 
-          {/* Input Mode Toggle */}
-          <div className="mode-toggle">
-            <button
-              className={`mode-btn ${inputMode === 'text' ? 'active' : ''}`}
-              onClick={() => setInputMode('text')}
-            >
-              Text Input
-            </button>
-            <button
-              className={`mode-btn ${inputMode === 'file' ? 'active' : ''}`}
-              onClick={() => setInputMode('file')}
-            >
-              File Upload
-            </button>
-          </div>
+          <div className="divider">OR</div>
 
-          {inputMode === 'text' ? (
-            <>
-              <label htmlFor="process-text" className="label">
-                Process Description
-              </label>
-              <textarea
-                id="process-text"
-                className="textarea"
-                placeholder="Enter your process description here...&#10;&#10;Example:&#10;The invoice processing process begins when an invoice is received via email. The finance clerk opens the email attachment and verifies the invoice amount against the purchase order. If the amount is correct and under $1000, they approve it for payment. If the amount is over $1000, manager approval is required. Once approved, the invoice is entered into the ERP system and marked for payment."
-                value={processText}
-                onChange={(e) => setProcessText(e.target.value)}
-                rows={12}
-              />
-            </>
-          ) : (
-            <>
-              <label htmlFor="file-upload" className="label">
-                Upload Document or Video
-              </label>
-              <div className="file-upload-area">
-                <input
-                  id="file-upload"
-                  type="file"
-                  accept=".pdf,.docx,.mp4,.mov,.avi"
-                  onChange={handleFileChange}
+          <label htmlFor="file-upload" className="label">
+            Upload Document or Video (Optional)
+          </label>
+          <div className="file-upload-area">
+            <input
+              id="file-upload"
+              type="file"
+              accept=".pdf,.docx,.mp4,.mov,.avi"
+              onChange={handleFileChange}
+              disabled={loading}
+            />
+            {uploadedFile && (
+              <div className="file-info">
+                <strong>Selected file:</strong> {uploadedFile.name}
+                <span className="file-size">({(uploadedFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+                <button
+                  className="btn-remove-file"
+                  onClick={handleRemoveFile}
                   disabled={loading}
-                />
-                {uploadedFile && (
-                  <div className="file-info">
-                    <strong>Selected file:</strong> {uploadedFile.name}
-                    <span className="file-size">({(uploadedFile.size / 1024 / 1024).toFixed(2)} MB)</span>
-                  </div>
-                )}
+                >
+                  Remove
+                </button>
               </div>
-              <p className="file-hint">
-                Supported formats: PDF, DOCX, MP4, MOV, AVI
-              </p>
-            </>
-          )}
+            )}
+          </div>
+          <p className="file-hint">
+            Supported formats: PDF, DOCX, MP4, MOV, AVI
+          </p>
 
           <div className="button-group">
             <button
               className="btn btn-primary"
-              onClick={() => generatePDD(viewMode === 'interactive')}
-              disabled={loading}
+              onClick={generatePDD}
+              disabled={loading || (!processText.trim() && !uploadedFile)}
             >
               {loading ? 'Processing...' : 'Generate PDD'}
             </button>
@@ -270,20 +218,12 @@ function App() {
               Clear
             </button>
           </div>
-        </div>
 
-        {error && (
-          <div className="error-message">
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-
-        {/* Interactive Mode */}
-        {viewMode === 'interactive' && pddData && (
-          <div className="output-section">
-            <div className="output-header">
-              <h2>{pddData.process_name}</h2>
-              <div className="export-buttons">
+          {/* Export buttons - shown after PDD is generated */}
+          {pddData && (
+            <div className="export-section">
+              <label className="label">Export Options</label>
+              <div className="button-group">
                 <button
                   className="btn btn-small btn-primary"
                   onClick={exportToPDF}
@@ -307,50 +247,48 @@ function App() {
                 </button>
               </div>
             </div>
+          )}
+        </div>
 
-            <DiagramViewer diagramCode={pddData.diagram_code} />
-
-            <div className="sections-container">
-              {pddData.sections.map((section, index) => (
-                <PDDSection
-                  key={index}
-                  section={section}
-                  onRefine={handleSectionRefine}
-                />
-              ))}
-            </div>
+        {error && (
+          <div className="error-message">
+            <strong>Error:</strong> {error}
           </div>
         )}
 
-        {/* Classic HTML Mode */}
-        {viewMode === 'html' && generatedPDD && (
+        {/* PDD Output Section */}
+        {pddData && (
           <div className="output-section">
             <div className="output-header">
-              <h2>Generated PDD</h2>
-              <button
-                className="btn btn-small"
-                onClick={() => {
-                  const printWindow = window.open('', '_blank')
-                  printWindow.document.write(generatedPDD)
-                  printWindow.document.close()
-                  printWindow.print()
-                }}
-              >
-                Print / Save as PDF
-              </button>
+              <h2>{pddData.process_name}</h2>
             </div>
-            <div
-              className="pdd-content"
-              dangerouslySetInnerHTML={{ __html: generatedPDD }}
-            />
+
+            <div className="sections-container">
+              {pddData.sections.map((section, index) => {
+                // Find first matching section index for diagram placement
+                const diagramSectionIndex = pddData.sections.findIndex(s =>
+                  s.name === "Process Overview (AS IS)" ||
+                  s.name === "High Level Process Map (AS IS)" ||
+                  s.name === "Detailed Process Map (AS IS)"
+                )
+                const showDiagramAfter = diagramSectionIndex >= 0 && index === diagramSectionIndex
+
+                return (
+                  <React.Fragment key={index}>
+                    <PDDSection
+                      section={section}
+                      onRefine={handleSectionRefine}
+                    />
+                    {showDiagramAfter && pddData.diagram_code && (
+                      <DiagramViewer diagramCode={pddData.diagram_code} />
+                    )}
+                  </React.Fragment>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>
-
-      {/* Chat Widget - only show in interactive mode */}
-      {viewMode === 'interactive' && (
-        <ChatWidget context={processText} />
-      )}
     </div>
   )
 }

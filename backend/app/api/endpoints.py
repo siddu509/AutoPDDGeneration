@@ -70,8 +70,11 @@ async def generate_pdd(request: Request, body: GeneratePDDRequest):
         # Extract PDD sections using the text agent
         sections = extract_pdd_sections(body.process_text)
 
-        # Get the process name for the title (first section)
+        # Get the process name for the title (first section) - strip HTML tags
+        import re
         process_name = sections[0]["content"] if sections else "Process Design Document"
+        process_name_clean = re.sub('<[^<]+?>', '', process_name).strip()
+        process_name = process_name_clean if process_name_clean else "Process Design Document"
 
         # Generate diagram from process steps (6th section - Detailed Process Steps)
         diagram_code = None
@@ -158,8 +161,11 @@ async def upload_and_process(request: Request, file: UploadFile = File(...)):
         # Generate PDD from the extracted text
         sections = extract_pdd_sections(process_text)
 
-        # Get the process name for the title
+        # Get the process name for the title - strip HTML tags
+        import re
         process_name = sections[0]["content"] if sections else "Process Design Document"
+        process_name_clean = re.sub('<[^<]+?>', '', process_name).strip()
+        process_name = process_name_clean if process_name_clean else "Process Design Document"
 
         # Generate diagram from process steps
         diagram_code = None
@@ -330,8 +336,12 @@ async def generate_pdd_json(request: Request, body: GeneratePDDRequest):
         # Extract PDD sections
         sections = extract_pdd_sections(body.process_text)
 
-        # Get the process name
+        # Get the process name - strip HTML tags to get plain text
+        import re
         process_name = sections[0]["content"] if sections else "Process Design Document"
+        # Remove HTML tags to get clean text for title
+        process_name_clean = re.sub('<[^<]+?>', '', process_name).strip()
+        process_name = process_name_clean if process_name_clean else "Process Design Document"
 
         # Generate diagram
         diagram_code = None
@@ -396,7 +406,13 @@ async def upload_and_process_json(request: Request, file: UploadFile = File(...)
 
         # Generate PDD
         sections = extract_pdd_sections(process_text)
+
+        # Get the process name - strip HTML tags to get plain text
+        import re
         process_name = sections[0]["content"] if sections else "Process Design Document"
+        # Remove HTML tags to get clean text for title
+        process_name_clean = re.sub('<[^<]+?>', '', process_name).strip()
+        process_name = process_name_clean if process_name_clean else "Process Design Document"
 
         # Generate diagram
         diagram_code = None
@@ -447,28 +463,30 @@ def _create_html_document(process_name: str, sections: List[Dict], diagram_code:
 def _create_word_document(process_name: str, sections: List[Dict], diagram_code: Optional[str]) -> bytes:
     """Create a Word document (.docx) from the PDD data."""
     doc = Document()
-    
+
     # Title
     title = doc.add_heading(process_name, 0)
     title.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    
+
     # Add subtitle
     subtitle = doc.add_paragraph('Process Definition Document (PDD)')
     subtitle.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
     subtitle.runs[0].italic = True
-    
-    # Add diagram if exists
-    if diagram_code:
-        doc.add_heading('Process Flow Diagram', level=2)
-        doc.add_paragraph('Diagram code (Mermaid syntax):')
-        doc.add_paragraph(diagram_code)
-        doc.add_paragraph()  # Empty line
-    
+
+    # Find the section after which to insert the diagram
+    diagram_insert_after = -1
+    for i, section in enumerate(sections):
+        if (section['name'] == "Process Overview (AS IS)" or
+            section['name'] == "High Level Process Map (AS IS)" or
+            section['name'] == "Detailed Process Map (AS IS)"):
+            diagram_insert_after = i
+            break
+
     # Add sections
-    for section in sections:
+    for i, section in enumerate(sections):
         section_name = section['name']
         content = section['content']
-        
+
         # Handle different heading levels based on section name
         if 'Purpose' in section_name or 'Objectives' in section_name or 'Key Contacts' in section_name or 'Pre-requisites' in section_name:
             doc.add_heading(section_name, level=2)
@@ -482,12 +500,12 @@ def _create_word_document(process_name: str, sections: List[Dict], diagram_code:
             doc.add_heading(section_name, level=1)
         else:
             doc.add_heading(section_name, level=2)
-        
+
         # Add content
         # Convert HTML content to plain text paragraphs
         lines = content.replace('<br>', '\n').replace('</p>', '\n').split('\n')
         current_paragraph = None
-        
+
         for line in lines:
             line = line.strip()
             if not line:
@@ -495,7 +513,7 @@ def _create_word_document(process_name: str, sections: List[Dict], diagram_code:
                     current_paragraph = None
                 doc.add_paragraph()
                 continue
-            
+
             # Remove HTML tags
             import re
             clean_line = re.sub('<[^<]+?>', '', line)
@@ -507,7 +525,14 @@ def _create_word_document(process_name: str, sections: List[Dict], diagram_code:
                     doc.add_paragraph(clean_line, style='List Bullet')
                 else:
                     doc.add_paragraph(clean_line)
-    
+
+        # Insert diagram after the specified section
+        if diagram_code and i == diagram_insert_after:
+            doc.add_heading('Process Flow Diagram', level=2)
+            doc.add_paragraph('Diagram code (Mermaid syntax):')
+            doc.add_paragraph(diagram_code)
+            doc.add_paragraph()  # Empty line
+
     # Save to bytes
     from io import BytesIO
     doc_io = BytesIO()

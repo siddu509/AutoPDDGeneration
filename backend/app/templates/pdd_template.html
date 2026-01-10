@@ -171,19 +171,11 @@
         <h1>{{ process_name }}</h1>
         <p class="document-type">Process Definition Document (PDD)</p>
 
-        {% if diagram_code %}
-        <div class="diagram-container">
-            <h2>Process Flow Diagram</h2>
-            <div class="mermaid">
-{{ diagram_code }}
-            </div>
-        </div>
-        {% endif %}
-
+        {% set diagram_inserted = false %}
         {% for section in sections %}
         <div class="section">
             {% if section.name == "Project Name" %}
-                <h1>{{ section.content }}</h1>
+                {# Skip showing Project Name as a section since it's already the title #}
             {% elif "Purpose" in section.name or "Objectives" in section.name or "Key Contacts" in section.name or "Pre-requisites" in section.name %}
                 <h3>{{ section.name }}</h3>
                 <div class="section-content">{{ section.content | safe }}</div>
@@ -211,6 +203,17 @@
                 <div class="section-content">{{ section.content | safe }}</div>
             {% endif %}
         </div>
+
+        {# Insert diagram after the appropriate section #}
+        {% if not diagram_inserted and diagram_code and (section.name == "Process Overview (AS IS)" or section.name == "High Level Process Map (AS IS)" or section.name == "Detailed Process Map (AS IS)") %}
+        {% set diagram_inserted = true %}
+        <div class="diagram-container">
+            <h2>Process Flow Diagram</h2>
+            <div class="mermaid">
+{{ diagram_code }}
+            </div>
+        </div>
+        {% endif %}
         {% endfor %}
 
         <div style="margin-top: 50px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; color: #666; font-size: 12px;">
