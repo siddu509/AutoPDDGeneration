@@ -3,6 +3,7 @@ import React from 'react'
 import axios from 'axios'
 import PDDSection from './components/PDDSection'
 import DiagramViewer from './components/DiagramViewer'
+import config from './config'
 import './App.css'
 
 function App() {
@@ -28,18 +29,25 @@ function App() {
         const formData = new FormData()
         formData.append('file', uploadedFile)
 
-        const response = await axios.post('/api/upload-and-process-json', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        })
+        const response = await axios.post(
+          config.api.endpoints.uploadAndProcessJson,
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }
+        )
 
         // If there's also text, we could append it or use it as context
         // For now, file processing is standalone
         setPddData(response.data)
       } else if (processText.trim()) {
         // Text-only input
-        const response = await axios.post('/api/generate-pdd-json', {
-          process_text: processText
-        })
+        const response = await axios.post(
+          config.api.endpoints.generatePDDJson,
+          {
+            process_text: processText
+          }
+        )
         setPddData(response.data)
       }
     } catch (err) {
@@ -47,7 +55,7 @@ function App() {
       if (err.response) {
         setError(`Server error: ${err.response.data.detail || 'Unknown error'}`)
       } else if (err.request) {
-        setError('No response from server. Make sure the backend is running on http://localhost:8000')
+        setError('Unable to connect to server. Please check your connection and try again.')
       } else {
         setError(`Error: ${err.message}`)
       }
@@ -101,12 +109,15 @@ function App() {
     setLoading(true)
     try {
       if (format === 'pdf') {
-        const response = await axios.post('/api/export-pdd', {
-          process_name: pddData.process_name,
-          sections: pddData.sections,
-          diagram_code: pddData.diagram_code,
-          format: format
-        })
+        const response = await axios.post(
+          config.api.endpoints.exportPDD,
+          {
+            process_name: pddData.process_name,
+            sections: pddData.sections,
+            diagram_code: pddData.diagram_code,
+            format: format
+          }
+        )
 
         const printWindow = window.open('', '_blank')
         printWindow.document.write(response.data)
@@ -115,14 +126,18 @@ function App() {
           printWindow.print()
         }, 500)
       } else {
-        const response = await axios.post('/api/export-pdd', {
-          process_name: pddData.process_name,
-          sections: pddData.sections,
-          diagram_code: pddData.diagram_code,
-          format: format
-        }, {
-          responseType: 'blob'
-        })
+        const response = await axios.post(
+          config.api.endpoints.exportPDD,
+          {
+            process_name: pddData.process_name,
+            sections: pddData.sections,
+            diagram_code: pddData.diagram_code,
+            format: format
+          },
+          {
+            responseType: 'blob'
+          }
+        )
 
         const blob = new Blob([response.data])
         const url = URL.createObjectURL(blob)

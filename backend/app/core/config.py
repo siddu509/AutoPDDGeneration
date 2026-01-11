@@ -2,15 +2,71 @@
 Configuration and dependency injection for the PDD Generator application.
 
 This module centralizes all configuration settings and provides factory functions
-for creating LLM clients. This eliminates duplication and makes the application
-easier to test and maintain.
+for creating LLM clients and logging configuration. This eliminates duplication
+and makes the application easier to test and maintain.
 """
 
 import os
+import logging
+import sys
 from functools import lru_cache
 
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
+
+
+# Configure logging at module import time
+def setup_logging(
+    level: int = logging.INFO,
+    log_format: str = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+) -> None:
+    """
+    Configure application-wide logging.
+
+    This function should be called once at application startup to set up
+    consistent logging across all modules.
+
+    Args:
+        level: Logging level (default: INFO)
+        log_format: Format string for log messages
+
+    Example:
+        >>> setup_logging(logging.DEBUG)
+        >>> logger = logging.getLogger(__name__)
+        >>> logger.debug("Debug message")
+    """
+    logging.basicConfig(
+        level=level,
+        format=log_format,
+        handlers=[
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+
+
+# Initialize logging on module import
+setup_logging()
+
+
+def get_logger(name: str) -> logging.Logger:
+    """
+    Get a configured logger instance.
+
+    Factory function for getting loggers with consistent configuration.
+    Use this instead of logging.getLogger() directly for consistency.
+
+    Args:
+        name: Usually __name__ from calling module
+
+    Returns:
+        Configured logger instance
+
+    Example:
+        >>> from app.core.config import get_logger
+        >>> logger = get_logger(__name__)
+        >>> logger.info("Application started")
+    """
+    return logging.getLogger(name)
 
 
 @lru_cache()

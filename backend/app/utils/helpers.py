@@ -6,6 +6,11 @@ These are pure functions that eliminate code duplication across the codebase.
 import re
 from typing import Optional, Callable
 
+from app.core.config import get_logger
+
+# Get module logger
+logger = get_logger(__name__)
+
 
 def strip_html_tags(text: str) -> str:
     """
@@ -55,7 +60,7 @@ def safe_diagram_generation(diagram_func: Callable, process_steps: str) -> Optio
     try:
         return diagram_func(process_steps)
     except Exception as e:
-        print(f"Warning: Failed to generate diagram: {e}")
+        logger.warning(f"Failed to generate diagram: {e}")
         return None
 
 

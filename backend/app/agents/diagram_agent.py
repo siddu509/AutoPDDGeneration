@@ -4,6 +4,8 @@ Diagram generation agent for creating Mermaid.js flowcharts from process steps.
 
 from langchain_openai import ChatOpenAI
 
+from app.core.config import get_llm
+
 
 def generate_mermaid_diagram(process_steps: str) -> str:
     """
@@ -19,8 +21,8 @@ def generate_mermaid_diagram(process_steps: str) -> str:
         Exception: If diagram generation fails
     """
     try:
-        # Initialize LLM
-        llm = ChatOpenAI(model="gpt-4o", temperature=0)
+        # Initialize LLM using centralized config
+        llm = get_llm()
 
         # Create diagram generation prompt
         diagram_prompt = f"""

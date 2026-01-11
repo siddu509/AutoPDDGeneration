@@ -16,6 +16,10 @@ from app.agents.video_agent import (
     analyze_video_frames,
     synthesize_video_analysis
 )
+from app.core.config import get_logger
+
+# Get module logger
+logger = get_logger(__name__)
 
 
 class FileProcessingService:
@@ -167,5 +171,7 @@ class FileProcessingService:
         if self.temp_file_path and os.path.exists(self.temp_file_path):
             try:
                 os.unlink(self.temp_file_path)
-            except Exception:
-                pass  # Silently fail during cleanup
+            except Exception as e:
+                logger.warning(
+                    f"Failed to cleanup temp file {self.temp_file_path}: {e}"
+                )

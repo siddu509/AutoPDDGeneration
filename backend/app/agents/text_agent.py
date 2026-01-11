@@ -4,10 +4,8 @@ from typing import List, Dict
 import yaml
 
 from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+from app.core.config import get_llm
 
 
 def load_pdd_structure() -> Dict:
@@ -31,13 +29,8 @@ def extract_pdd_sections(text_content: str) -> List[Dict[str, str]]:
         Exception: If the OpenAI API call fails
     """
     try:
-        # Initialize the OpenAI chat model
-        llm = ChatOpenAI(
-            model="gpt-4o",
-            temperature=0,
-            api_key=os.getenv("OPENAI_API_KEY"),
-            base_url=os.getenv("OPENAI_API_BASE")
-        )
+        # Initialize the OpenAI chat model using centralized config
+        llm = get_llm()
 
         # Load the PDD structure
         pdd_structure = load_pdd_structure()

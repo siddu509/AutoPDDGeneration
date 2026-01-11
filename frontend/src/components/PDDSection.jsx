@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import axios from 'axios'
+import DOMPurify from 'dompurify'
+import config from '../config'
 import './PDDSection.css'
 
 function PDDSection({ section, onRefine }) {
@@ -26,11 +28,14 @@ function PDDSection({ section, onRefine }) {
 
     setRefining(true)
     try {
-      const response = await axios.post('/refine-section', {
-        section_name: section.name,
-        current_content: section.content,
-        user_feedback: refineFeedback
-      })
+      const response = await axios.post(
+        config.api.endpoints.refineSection,
+        {
+          section_name: section.name,
+          current_content: section.content,
+          user_feedback: refineFeedback
+        }
+      )
 
       setOriginalContent(section.content)
       setEditedContent(response.data.refined_content)
@@ -121,7 +126,9 @@ function PDDSection({ section, onRefine }) {
       ) : (
         <div
           className="section-content"
-          dangerouslySetInnerHTML={{ __html: section.content }}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(section.content)
+          }}
         />
       )}
 

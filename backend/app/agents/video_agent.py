@@ -3,13 +3,14 @@ Video processing agent for extracting process information from screen recordings
 This agent transcribes audio directly from video files using OpenAI Whisper API.
 """
 
-import os
 from openai import OpenAI
 from langchain_openai import ChatOpenAI
 
+from app.core.config import get_llm, get_openai_client
 
-# Initialize OpenAI client
-client = OpenAI()
+
+# Initialize OpenAI client using centralized config
+client = get_openai_client()
 
 
 def transcribe_audio_from_video(video_path: str) -> str:
@@ -72,8 +73,8 @@ def synthesize_video_analysis(transcript: str, visual_actions: str) -> str:
         Exception: If synthesis fails
     """
     try:
-        # Initialize LLM
-        llm = ChatOpenAI(model="gpt-4o", temperature=0)
+        # Initialize LLM using centralized config
+        llm = get_llm()
 
         # Create synthesis prompt
         synthesis_prompt = f"""
