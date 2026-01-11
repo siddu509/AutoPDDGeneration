@@ -1,0 +1,181 @@
+# PDD Generator Configuration
+# ================================================
+# This file contains all configurable settings for the PDD Generator application.
+# Settings in this file can be overridden by environment variables.
+#
+# Priority: Environment Variables > config.yaml > defaults
+# ================================================
+
+# Application Settings
+app:
+  name: "PDD Generator API"
+  version: "1.0.0"
+  description: "AI-powered Process Design Document Generator"
+  environment: "production"  # development, staging, production
+  debug: false
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+# Server Settings
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4  # Number of uvicorn workers for production
+  reload: false  # Auto-reload on code changes (development only)
+  access_log: true
+
+# OpenAI API Configuration
+openai:
+  # Model to use for text processing (PDD generation, refinement, chat)
+  llm_model: "gpt-4o"  # Options: gpt-4o, gpt-4-turbo, gpt-3.5-turbo
+  temperature: 0.0  # 0.0 = deterministic, 1.0 = very creative
+
+  # Model to use for audio/video transcription
+  whisper_model: "whisper-1"
+
+  # API Configuration
+  api_base: "https://api.openai.com/v1"  # Override for Azure OpenAI or proxy
+  max_retries: 3
+  timeout: 120  # Request timeout in seconds
+
+  # Cost Control
+  max_tokens_per_request: 4000  # Limit token usage
+  daily_budget_limit: null  # Set to enforce daily budget (e.g., 10.00)
+
+# Rate Limiting Configuration
+rate_limiting:
+  enabled: true
+  storage: "memory"  # Options: memory, redis (for distributed systems)
+
+  # Per-IP rate limits
+  limits:
+    pdd_generation: "10/minute"  # PDD generation endpoint
+    file_upload: "5/minute"  # File upload processing
+    section_refine: "20/minute"  # Section refinement
+    chat: "30/minute"  # Chat endpoint
+
+  # Rate limit response
+  retry_after: 60  # Seconds to tell client to wait
+
+# CORS Configuration
+cors:
+  enabled: true
+  origins:
+    - "http://localhost:3000"  # React development server
+    - "http://localhost:5173"  # Vite dev server
+    - "https://your-production-domain.com"  # ADD YOUR PRODUCTION DOMAIN
+  allow_credentials: true
+  allow_methods: ["*"]
+  allow_headers: ["*"]
+
+# File Processing Configuration
+file_processing:
+  # Supported file types
+  supported_document_types:
+    - ".pdf"
+    - ".docx"
+
+  supported_video_types:
+    - ".mp4"
+    - ".mov"
+    - ".avi"
+
+  # File size limits (in MB)
+  max_file_size: 100  # Maximum upload file size
+
+  # Temporary file storage
+  temp_dir: "/tmp"  # Directory for temporary files
+  cleanup_enabled: true  # Auto-cleanup temp files after processing
+
+  # Video processing
+  video:
+    frame_extraction_enabled: false  # Requires ffmpeg
+    frames_per_second: 0.33  # Extract 1 frame every 3 seconds
+
+# PDD Generation Configuration
+pdd_generation:
+  # Section generation
+  max_sections: 20  # Maximum number of PDD sections to generate
+
+  # Diagram generation
+  diagram_enabled: true  # Generate Mermaid diagrams
+  diagram_complexity: "medium"  # Options: simple, medium, complex
+
+  # Output format
+  default_format: "json"  # Options: html, json, docx
+
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "json"  # Options: json, text  (json for production, text for development)
+
+  # Log to file (optional)
+  file_enabled: false
+  file_path: "logs/app.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
+
+  # Request logging
+  log_requests: true  # Log all HTTP requests
+  log_request_body: false  # Set to true for debugging (security risk in production)
+
+# Export Configuration
+export:
+  formats:
+    - "html"
+    - "docx"
+    - "pdf"  # Currently HTML wrapper (true PDF requires additional libraries)
+
+  # Word document settings
+  word:
+    font: "Calibri"
+    default_font_size: 11
+    heading_font_size: 14
+
+# Security Settings
+security:
+  # API Key validation
+  require_api_key: false  # Require API key for all endpoints (future feature)
+
+  # Content Security Policy
+  enable_csp: false  # Add CSP headers (future enhancement)
+
+  # Request size limits
+  max_request_size: 10485760  # 10MB
+
+# Performance Settings
+performance:
+  # Caching (future feature)
+  cache_enabled: false
+  cache_ttl: 3600  # Cache time-to-live in seconds
+
+  # Connection pooling
+  max_connections: 100
+  max_keepalive_connections: 10
+
+# Monitoring & Health Checks
+monitoring:
+  # Health check endpoint
+  health_check_enabled: true
+
+  # Metrics (future: Prometheus, DataDog, etc.)
+  metrics_enabled: false
+  metrics_port: 9090
+
+  # Request tracing (future)
+  tracing_enabled: false
+
+# Feature Flags
+features:
+  video_processing: true
+  document_processing: true
+  diagram_generation: true
+  ai_refinement: true
+  export_pdf: true  # Currently HTML wrapper
+  chat_assistant: true
+
+# Development Settings
+development:
+  hot_reload: false  # Auto-reload on code changes
+  debug_toolbar: false  # FastAPI debug interface
+  docs_enabled: true  # Auto-generated API docs at /docs
+  redoc_enabled: true  # Alternative API docs at /redoc

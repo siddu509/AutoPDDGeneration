@@ -11,3 +11,4 @@ openai
 python-multipart
 slowapi
 limits
+pyyaml  # Already listed but ensuring it's here
