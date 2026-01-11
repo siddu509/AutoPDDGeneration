@@ -7,8 +7,11 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi.errors import RateLimitExceeded
+
 from app.api import endpoints
 from app.core.config import get_logger, get_openai_api_key
+from app.middleware import limiter, rate_limit_exceeded_handler, RequestLoggingMiddleware
 
 # Get logger
 logger = get_logger(__name__)
@@ -64,6 +67,13 @@ app = FastAPI(
     description="AI-powered Process Design Document Generator",
     version="1.0.0"
 )
+
+# Attach rate limiter to app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+# Add request logging middleware
+app.add_middleware(RequestLoggingMiddleware)
 
 # Configure CORS
 app.add_middleware(

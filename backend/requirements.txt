@@ -9,3 +9,5 @@ python-docx
 ffmpeg-python
 openai
 python-multipart
+slowapi
+limits

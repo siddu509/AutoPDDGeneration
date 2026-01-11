@@ -6,7 +6,7 @@ and response serialization. Centralizing these models makes them
 reusable and easier to maintain.
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List, Dict
 
 
@@ -22,7 +22,11 @@ class GeneratePDDRequest(BaseModel):
         ...     process_text="The invoice process begins when..."
         ... )
     """
-    process_text: str
+    process_text: str = Field(
+        ...,
+        description="The process description to generate a PDD from",
+        example="The invoice processing process begins when an invoice is received via email. The finance clerk verifies the amount and approves it for payment."
+    )
 
 
 class PDDSection(BaseModel):
@@ -139,7 +143,11 @@ class RefineSectionResponse(BaseModel):
         ...     refined_content="Updated and improved content..."
         ... )
     """
-    refined_content: str
+    refined_content: str = Field(
+        ...,
+        description="The AI-refined content for the PDD section",
+        example="<p>The updated process description with improvements based on your feedback...</p>"
+    )
 
 
 class ChatResponse(BaseModel):

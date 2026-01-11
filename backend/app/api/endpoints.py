@@ -14,12 +14,15 @@ from app.api.schemas import (
     GeneratePDDRequest,
     RefineSectionRequest,
     ChatRequest,
-    ExportPDDRequest
+    ExportPDDRequest,
+    RefineSectionResponse,
+    ChatResponse
 )
 from app.services.pdd_service import PDDService
 from app.services.llm_service import LLMService
 from app.services.file_processing_service import FileProcessingService
 from app.services.export_service import ExportService
+from app.middleware import limiter
 
 
 router = APIRouter()
@@ -50,6 +53,7 @@ def get_export_service() -> ExportService:
 # ==================== HTML Endpoints ====================
 
 @router.post("/generate-pdd", response_class=HTMLResponse)
+@limiter.limit("10/minute")  # Allow 10 requests per minute per IP
 async def generate_pdd(
     request: Request,
     body: GeneratePDDRequest,
@@ -81,6 +85,7 @@ async def generate_pdd(
 
 
 @router.post("/upload-and-process", response_class=HTMLResponse)
+@limiter.limit("5/minute")  # Stricter limit for file uploads (more expensive)
 async def upload_and_process(
     request: Request,
     file: UploadFile = File(...),
@@ -131,7 +136,8 @@ async def health_check():
 
 # ==================== Interactive Endpoints ====================
 
-@router.post("/refine-section")
+@router.post("/refine-section", response_model=RefineSectionResponse)
+@limiter.limit("20/minute")  # Higher limit for quick refine operations
 async def refine_section(
     request: Request,
     body: RefineSectionRequest,
@@ -167,7 +173,7 @@ async def refine_section(
         )
 
 
-@router.post("/chat")
+@router.post("/chat", response_model=ChatResponse)
 async def chat(
     request: Request,
     body: ChatRequest,
@@ -201,6 +207,7 @@ async def chat(
 # ==================== JSON API Endpoints for Interactive UI ====================
 
 @router.post("/api/generate-pdd-json")
+@limiter.limit("10/minute")
 async def generate_pdd_json(
     request: Request,
     body: GeneratePDDRequest,
@@ -232,6 +239,7 @@ async def generate_pdd_json(
 
 
 @router.post("/api/upload-and-process-json")
+@limiter.limit("5/minute")  # Stricter limit for file uploads
 async def upload_and_process_json(
     request: Request,
     file: UploadFile = File(...),
