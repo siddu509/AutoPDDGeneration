@@ -8,14 +8,106 @@
 5. [Data Flow](#data-flow)
 6. [API Endpoints](#api-endpoints)
 7. [Agent System](#agent-system)
-8. [Configuration & Deployment](#configuration--deployment)
+8. [Security Components](#security-components)
+9. [Configuration & Deployment](#configuration--deployment)
+
+---
+
+## Component Overview
+
+This section provides a quick reference for all the technologies and components used in the PDD Generator, explained in simple terms.
+
+### 🎨 Frontend Components (What Users See)
+
+**What is Frontend?**
+The frontend is the **user interface** - what users see and interact with in their browser. Think of it like the display screen and buttons on an ATM machine.
+
+| Component | What It Does | Why It's Used |
+|-----------|--------------|---------------|
+| **React** | Manages UI components and their interactions | Makes it easy to build interactive, reusable pieces like forms and buttons |
+| **Vite** | Runs the React app during development, reloads when code changes | Fast development experience - see changes instantly |
+| **Axios** | Sends requests from frontend to backend and receives responses | Easier and more powerful than browser's built-in fetch API |
+| **Mermaid.js** | Turns text code into visual diagrams | Draws flowcharts showing process steps automatically |
+| **DOMPurify** | Cleans HTML to remove dangerous code | Security - prevents malicious scripts (XSS attacks) |
+
+---
+
+### ⚙️ Backend Components (The Server-Side Logic)
+
+**What is Backend?**
+The backend is the **server-side** of the application - the part users don't see but does all the work. Think of it like the kitchen in a restaurant: customers don't see it, but that's where all the food preparation happens.
+
+| Component | What It Does | Why It's Used |
+|-----------|--------------|---------------|
+| **FastAPI** | Handles HTTP requests and returns responses | Fast, modern Python framework with automatic API documentation |
+| **Uvicorn** | Web server that runs the Python application | FastAPI requires this type of server to run |
+| **Pydantic** | Validates that incoming data has correct format | Prevents errors from bad data, provides clear error messages |
+| **Jinja2** | Combines HTML templates with data to create final documents | Reusable templates with placeholders for AI-generated content |
+| **LangChain** | Manages interactions with OpenAI's GPT models | Simplifies working with AI, handles prompts and responses |
+
+---
+
+### 🤖 AI Services (The Intelligence)
+
+| Component | What It Does | Why It's Used |
+|-----------|--------------|---------------|
+| **GPT-4o** | Understands process descriptions and generates PDD content | Best AI model for understanding context and writing professional documentation |
+| **Whisper API** | Transcribes audio from video files into text | Converts spoken explanations in videos into text that GPT-4o can process |
+
+---
+
+### 📄 Document Processing Libraries
+
+| Component | What It Does | Why It's Used |
+|-----------|--------------|---------------|
+| **python-docx** | Creates and edits Microsoft Word (.docx) files | Exports PDDs as Word documents with proper formatting |
+| **pypdf** | Reads and extracts text from PDF files | Allows users to upload PDFs as input for PDD generation |
+
+---
+
+### 🏗️ Architecture Patterns (How Code Is Organized)
+
+| Pattern | What It Does | Why It's Used |
+|---------|--------------|---------------|
+| **Service Layer** | Separates business logic from API endpoints | Makes code easier to test, maintain, and reuse |
+| **Agent System** | Different components handle different tasks (text, video, diagrams) | Clean separation - each component does one thing well |
+| **Middleware** | Functions that run before/after requests (logging, rate limiting) | Applies features globally without repeating code |
+
+---
+
+### 🔒 Security Components (Protection)
+
+| Component | What It Does | Why It's Used |
+|-----------|--------------|---------------|
+| **Rate Limiting (slowapi)** | Limits how many requests a user can make | Protects against API abuse and ensures fair usage |
+| **CORS Middleware** | Allows frontend on one port to talk to backend on another | Browsers block cross-port requests by default for security |
+| **Input Validation (Pydantic)** | Checks that incoming data is correct | Prevents crashes and security issues from bad data |
+
+---
+
+### ⚙️ Configuration System (Settings)
+
+| Component | What It Does | Why It's Used |
+|-----------|--------------|---------------|
+| **Environment Variables (.env)** | Stores sensitive data like API keys outside code | Keeps secrets safe, allows different settings for dev/production |
+| **config.yaml** | Central file with all application settings | Single place to manage settings without changing code |
+
+---
+
+### 🚀 Deployment Components (Going Live)
+
+| Component | What It Does | Why It's Used |
+|-----------|--------------|---------------|
+| **Docker** | Packages app with all dependencies into a container | Ensures app runs the same everywhere (dev, staging, production) |
+| **nginx** | Web server that serves the React frontend in production | Fast, efficient, handles HTTPS and caching |
+| **docker-compose** | Runs multiple containers together (frontend + backend) | Simplifies running full-stack app locally and in production |
 
 ---
 
 ## System Overview
 
 ### Purpose
-The AI-Powered UiPath PDD Generator is a full-stack web application that automates the creation of Process Design Documents (PDDs) for Robotic Process Automation (RPA) projects. It accepts multiple input types (text, PDF, Word documents, and videos) and uses OpenAI's GPT-4o and Whisper models to generate structured, professional documentation with interactive editing capabilities.
+The AI-Powered PDD Generator is a full-stack web application that automates the creation of Process Design Documents (PDDs) for Robotic Process Automation (RPA) projects. It accepts multiple input types (text, PDF, Word documents, and videos) and uses LLM and STT models to generate structured, professional documentation with interactive editing capabilities.
 
 ### Key Features
 - **Multi-modal Input Support**: Text, PDF, DOCX, MP4, MOV, AVI
@@ -115,6 +207,94 @@ The AI-Powered UiPath PDD Generator is a full-stack web application that automat
 ---
 
 ## Backend Components
+
+### Understanding the Backend
+
+The **backend** is the **server-side** of the application - the part users don't see but does all the work. Think of it like the kitchen in a restaurant:
+
+- **Frontend** = Dining area where customers sit (what users see)
+- **Backend** = Kitchen where food is prepared (where the work happens)
+
+When you click "Generate PDD" in the frontend, it sends a request to the backend. The backend processes your request using AI, then sends back the generated PDD document.
+
+### Key Backend Technologies
+
+#### FastAPI - The Web Framework
+**What is it?**
+FastAPI is a **Python framework** for building web APIs (Application Programming Interfaces). It's like a toolkit that makes it easy to create web servers.
+
+**What it does in PDD Generator**
+- Listens for incoming requests from the React frontend
+- Routes each request to the right function (generate PDD, upload file, etc.)
+- Validates incoming data
+- Returns responses in JSON format
+- Automatically generates API documentation at `/docs`
+
+**Why it's used here**
+- **Fast**: Built on Python's async features, handles many requests efficiently
+- **Easy**: Simple, clean code that's quick to write and understand
+- **Auto-docs**: Generates interactive API documentation automatically
+- **Modern**: Uses latest Python features and best practices
+
+#### Uvicorn - The Web Server
+**What is it?**
+Uvicorn is a web server that runs Python web applications.
+
+**What it does in PDD Generator**
+- Listens for HTTP requests on port 8000
+- Passes requests to FastAPI for processing
+- Handles multiple connections at once
+
+**Why it's used here**
+- FastAPI requires an ASGI server like Uvicorn to run
+- Very fast and efficient
+- Supports async operations
+
+#### Pydantic - Data Validation
+**What is it?**
+Pydantic is a library for validating and parsing data.
+
+**What it does in PDD Generator**
+- Checks that incoming requests have the correct data types
+- Ensures required fields are present
+- Provides clear error messages when data is invalid
+- Automatically converts data to the right format
+
+**Why it's used here**
+- Prevents crashes from bad data
+- Catches errors early with helpful messages
+- Works seamlessly with FastAPI
+
+#### Jinja2 - Template Engine
+**What is it?**
+Jinja2 is a template engine for creating HTML dynamically.
+
+**What it does in PDD Generator**
+- Combines HTML templates with AI-generated content
+- Fills in placeholders with actual PDD data
+- Creates the final HTML PDD document
+
+**Why it's used here**
+- Allows reusable HTML templates
+- Clean separation of design and data
+- Flexible and powerful
+
+#### LangChain - AI Framework
+**What is it?**
+LangChain is a framework for working with AI language models (LLMs).
+
+**What it does in PDD Generator**
+- Manages interactions with OpenAI's GPT models
+- Handles prompt engineering
+- Processes AI responses
+- Simplifies working with multiple AI calls
+
+**Why it's used here**
+- Makes working with AI much easier
+- Provides consistent interface to different models
+- Handles complex AI workflows
+
+---
 
 ### 1. Application Entry Point (`main.py`)
 
@@ -910,6 +1090,92 @@ body {
 
 ## Frontend Components
 
+### Understanding the Frontend
+
+The **frontend** is the **user interface** - what users see and interact with in their browser. Think of it like the display screen and buttons on an ATM machine:
+
+- **Frontend** = The screen and buttons you interact with
+- **Backend** = The computer behind the wall that processes your requests
+
+When you open the PDD Generator in your browser, you're seeing the frontend. When you click buttons or type text, the frontend sends your actions to the backend and displays the results.
+
+### Key Frontend Technologies
+
+#### React - The UI Library
+**What is it?**
+React is a **JavaScript library** for building user interfaces. It's like a box of LEGO blocks for websites - you build complex interfaces by combining simple, reusable pieces.
+
+**What it does in PDD Generator**
+- Creates the UI components (forms, buttons, displays)
+- Manages what appears on the screen
+- Handles user interactions (clicks, typing, file uploads)
+- Updates the display when data changes
+
+**Why it's used here**
+- **Component-based**: Build once, reuse everywhere
+- **Interactive**: Smooth updates without reloading the page
+- **Popular**: Huge community and lots of help available
+- **Fast**: Efficient updates to the UI
+
+#### Vite - The Build Tool
+**What is it?**
+Vite is a **build tool** that runs the React app during development.
+
+**What it does in PDD Generator**
+- Serves the React application in development
+- Reloads the browser automatically when code changes
+- Bundles everything for production
+
+**Why it's used here**
+- **Lightning fast**: Uses native browser modules
+- **Instant updates**: See changes immediately
+- **Modern**: Built with latest web standards
+
+#### Axios - The HTTP Client
+**What is it?**
+Axios is a **library for making HTTP requests** to backend servers.
+
+**What it does in PDD Generator**
+- Sends data from frontend to backend (text, files)
+- Receives responses from the backend
+- Handles loading states and errors
+- Manages async operations smoothly
+
+**Why it's used here**
+- **Simple**: Easier to use than browser's fetch API
+- **Powerful**: Automatic JSON conversion, request cancellation
+- **Reliable**: Good error handling
+
+#### Mermaid.js - The Diagram Library
+**What is it?**
+Mermaid is a **library that turns text into diagrams**.
+
+**What it does in PDD Generator**
+- Takes diagram code from the backend
+- Draws flowcharts showing process steps
+- Makes diagrams interactive and readable
+
+**Why it's used here**
+- **Text-based**: Easy to store and transfer
+- **Automatic**: No manual diagram drawing
+- **Professional**: Clean, readable diagrams
+
+#### DOMPurify - The Security Library
+**What is it?**
+DOMPurify is a **security library** that cleans HTML.
+
+**What it does in PDD Generator**
+- Removes dangerous code from HTML before displaying it
+- Prevents XSS (Cross-Site Scripting) attacks
+- Keeps safe HTML formatting
+
+**Why it's used here**
+- **Security**: Blocks malicious scripts
+- **Safe**: Allows HTML formatting without risk
+- **Necessary**: AI-generated HTML could contain anything
+
+---
+
 ### 1. Main Application (`App.jsx`)
 
 **File:** `frontend/src/App.jsx`
@@ -1312,6 +1578,141 @@ useEffect(() => {
 
 ---
 
+## Security Components
+
+### Understanding Web Security
+
+**Web security** means protecting the application from bad actors who might try to:
+- Steal data
+- Break the application
+- Use the API unfairly
+- Inject malicious code
+
+Think of web security like the locks and security guards at a bank:
+- **Locks** = Authentication (only authorized users can enter)
+- **Security guards** = Validation (checking IDs at the door)
+- **Cameras** = Logging (recording what happens)
+- **Alarm systems** = Rate limiting (alerting on suspicious activity)
+
+### Key Security Features in PDD Generator
+
+#### Rate Limiting - Preventing Abuse
+**What is it?**
+Rate limiting restricts how many requests a user can make in a time period.
+
+**What it does in PDD Generator**
+- Limits PDD generation to 10 requests per minute
+- Limits file uploads to 5 requests per minute
+- Limits section refinement to 20 requests per minute
+- Returns error message when limits are exceeded
+
+**Why it's used here**
+- **Prevents abuse**: Stops users from overwhelming the server
+- **Fair usage**: Ensures everyone gets equal access
+- **Cost control**: Limits OpenAI API costs
+- **Stability**: Prevents server crashes from too many requests
+
+**Technical Implementation**: Uses the `slowapi` library to track requests by IP address and enforce limits.
+
+#### CORS - Cross-Origin Resource Sharing
+**What is it?**
+CORS is a security feature that controls which websites can talk to the backend.
+
+**What it does in PDD Generator**
+- Allows frontend on localhost:5173 to talk to backend on localhost:8000
+- Blocks requests from unauthorized websites
+- Configurable for production domains
+
+**Why it's used here**
+- **Browser security**: Browsers block cross-port requests by default
+- **Protection**: Prevents malicious websites from using the API
+- **Flexibility**: Can whitelist trusted domains
+
+**Technical Implementation**: FastAPI CORS middleware checks the `Origin` header and allows or blocks requests.
+
+#### Input Validation - Checking Data
+**What is it?**
+Input validation ensures incoming data is correct and safe.
+
+**What it does in PDD Generator**
+- Checks that required fields are present
+- Verifies data types (text, numbers, files)
+- Validates file types (only PDF, DOCX, MP4, etc.)
+- Limits file sizes (max 100MB)
+
+**Why it's used here**
+- **Prevents crashes**: Bad data can't break the system
+- **Security**: Blocks malicious input
+- **Clear errors**: Tells users exactly what's wrong
+- **Early detection**: Catches problems before processing
+
+**Technical Implementation**: Uses Pydantic models to automatically validate and type-check all incoming data.
+
+#### XSS Protection - Preventing Malicious Scripts
+**What is it?**
+XSS (Cross-Site Scripting) protection blocks malicious scripts in user-generated content.
+
+**What it does in PDD Generator**
+- DOMPurify removes dangerous code from HTML before displaying
+- Allows safe HTML formatting (bold, lists, etc.)
+- Blocks script tags and event handlers
+
+**Why it's used here**
+- **Security**: AI-generated content could contain anything
+- **Safety**: Prevents attacks through PDD content
+- **Flexibility**: Still allows HTML formatting
+
+**Technical Implementation**: DOMPurify sanitizes all AI-generated HTML before rendering in React components.
+
+#### Environment Variables - Protecting Secrets
+**What is it?**
+Environment variables store sensitive configuration outside the code.
+
+**What it does in PDD Generator**
+- Stores OpenAI API key
+- Holds configuration settings
+- Different values for development/production
+
+**Why it's used here**
+- **Security**: API keys never in code or git
+- **Flexibility**: Change settings without code changes
+- **Best practice**: Standard industry approach
+
+**Technical Implementation**: Uses `.env` file (not in git) and `config.yaml` for settings.
+
+#### Request Logging - Audit Trail
+**What is it?**
+Request logging records all API requests for monitoring and debugging.
+
+**What it does in PDD Generator**
+- Logs every API request with method, path, and timing
+- Records response status codes
+- Tracks client IP addresses
+- Helps debug issues
+
+**Why it's used here**
+- **Debugging**: See what's happening in the system
+- **Security**: Detect suspicious patterns
+- **Performance**: Identify slow endpoints
+- **Audit**: Know who accessed what
+
+**Technical Implementation**: Custom middleware logs all requests before and after processing.
+
+### Security Best Practices Implemented
+
+✅ **Rate limiting** on all endpoints
+✅ **CORS** configured for allowed origins only
+✅ **Input validation** on all requests
+✅ **XSS protection** with DOMPurify
+✅ **API keys** in environment variables
+✅ **Request logging** for audit trail
+✅ **Error handling** without exposing sensitive information
+✅ **File type validation** for uploads
+✅ **File size limits** to prevent denial of service
+✅ **Non-root Docker user** for container security
+
+---
+
 ## Data Flow
 
 ### Complete End-to-End Flow
@@ -1670,6 +2071,102 @@ Request → Video Agent → Text Agent → Diagram Agent → Response
 
 ## Configuration & Deployment
 
+### Understanding Configuration
+
+**Configuration** is how you customize an application's behavior without changing its code. Think of it like the settings on your phone:
+
+- **Code** = The phone's operating system (doesn't change)
+- **Configuration** = Your settings (wallpaper, notifications, etc.)
+
+**Why separate configuration from code?**
+- **Security**: Sensitive data (API keys) never in code or git
+- **Flexibility**: Different settings for development vs production
+- **Convenience**: Change behavior without rewriting code
+- **Best practice**: Industry-standard approach
+
+### Configuration System Components
+
+#### Environment Variables (.env)
+**What is it?**
+Environment variables are **settings stored outside the code** in a file called `.env`.
+
+**What it does in PDD Generator**
+- Stores the OpenAI API key (secret!)
+- Holds server settings (host, port)
+- Configures AI models (which model to use)
+- Sets environment type (development, production)
+
+**Why it's used here**
+- **Security**: API keys never committed to git
+- **Flexibility**: Different settings for each environment
+- **Standard**: All web apps use this approach
+- **Safe**: `.env` file is in `.gitignore` (never uploaded)
+
+**Example**:
+```bash
+# .env file (NEVER commit this to git)
+OPENAI_API_KEY=sk-secret-key-here
+OPENAI_MODEL=gpt-4o
+APP_ENV=development
+```
+
+#### config.yaml - Central Configuration
+**What is it?**
+A **YAML file** that contains all application settings with default values.
+
+**What it does in PDD Generator**
+- Stores default values for 200+ configuration options
+- Organizes settings by category (app, server, openai, security, etc.)
+- Provides documentation for each setting
+- Allows changes without code modification
+
+**Why it's used here**
+- **Centralized**: One place for all settings
+- **Documented**: Each setting has explanation
+- **Flexible**: Override with environment variables when needed
+- **Organized**: Grouped by feature (logging, security, etc.)
+
+**Priority System**:
+1. **Environment variables** (highest priority) - Override everything
+2. **config.yaml** - Default configuration
+3. **Code defaults** (lowest priority) - Fallback values
+
+**Example**:
+```yaml
+# config.yaml
+app:
+  environment: production
+  log_level: INFO
+
+openai:
+  llm_model: gpt-4o  # Can be overridden by OPENAI_API_KEY env var
+  temperature: 0.0
+
+rate_limiting:
+  enabled: true
+  limits:
+    pdd_generation: 10/minute
+```
+
+#### Configuration Priority
+**How it works**:
+If you set `OPENAI_MODEL=gpt-3.5-turbo` in your `.env` file, it will override the `gpt-4o` value in `config.yaml`. This gives you maximum flexibility.
+
+**Example Scenario**:
+```bash
+# Developer's machine
+.env file: OPENAI_MODEL=gpt-3.5-turbo  (cheaper for testing)
+config.yaml: llm_model: gpt-4o
+Result: Uses gpt-3.5-turbo ✅
+
+# Production server
+.env file: (no OPENAI_MODEL set)
+config.yaml: llm_model: gpt-4o
+Result: Uses gpt-4o ✅
+```
+
+---
+
 ### Environment Variables
 
 Create `.env` file in `backend/` directory:
@@ -1734,6 +2231,112 @@ npm run dev
 ```
 
 **Server runs at:** http://localhost:5173
+
+---
+
+### Understanding Deployment
+
+**Deployment** means making your application available to users on the internet. Think of it like opening a store:
+
+- **Development** = Practicing in your garage (localhost, only you can access)
+- **Deployment** = Opening the store to the public (internet, anyone can access)
+
+**Why is deployment important?**
+- **Accessibility**: Users can access your app from anywhere
+- **Reliability**: Professional hosting ensures it's always available
+- **Performance**: Optimized servers handle many users
+- **Security**: Production environments have extra protections
+
+### Deployment Technologies
+
+#### Docker - Containerization
+**What is it?**
+Docker is a **containerization platform** that packages applications with everything they need to run. Think of it like a shipping container - it holds everything needed in one standardized box.
+
+**What it does in PDD Generator**
+- Packages the backend with Python and all dependencies
+- Packages the frontend with Node.js and build tools
+- Ensures the app runs the same everywhere
+- Simplifies deployment to any cloud platform
+
+**Why it's used here**
+- **Consistency**: Works the same on your machine and in production
+- **Isolation**: No conflicts with other apps or system libraries
+- **Scalability**: Easy to run multiple copies if needed
+- **Standard**: Industry-standard for deployment
+
+**Key Benefits**:
+- "Works on my machine" problem solved
+- Easy to move between cloud providers
+- Automatic dependency management
+- Fast startup and shutdown
+
+#### nginx - Web Server
+**What is it?**
+nginx is a **high-performance web server** that serves files to users.
+
+**What it does in PDD Generator**
+- Serves the React frontend (HTML, CSS, JS files)
+- Handles HTTPS encryption
+- Manages caching for faster loading
+- Can act as a reverse proxy for the backend
+
+**Why it's used here**
+- **Fast**: One of the fastest web servers available
+- **Efficient**: Handles thousands of connections easily
+- **Production-ready**: Battle-tested on millions of websites
+- **Lightweight**: Uses minimal resources
+
+**Key Benefits**:
+- Static file serving (React app)
+- SSL/TLS termination (HTTPS)
+- Load balancing (can distribute traffic)
+- Caching (faster responses)
+
+#### docker-compose - Multi-Container Orchestration
+**What is it?**
+docker-compose is a **tool for running multiple Docker containers together**.
+
+**What it does in PDD Generator**
+- Starts both frontend and backend containers
+- Connects them so they can talk to each other
+- Manages shared resources (networks, volumes)
+- Makes local development and production similar
+
+**Why it's used here**
+- **Simplicity**: One command to start the whole stack
+- **Consistency**: Same setup locally and in production
+- **Convenience**: No need to install Python, Node.js, etc.
+- **Standard**: Most common way to run multi-container apps
+
+**Key Benefits**:
+- `docker-compose up` - that's it!
+- Automatic networking between containers
+- Easy to add more services (databases, etc.)
+- Great for development and production
+
+### Deployment Process Overview
+
+**From Development to Production**:
+```
+1. Development (Your Computer)
+   ├── Frontend: React running on port 5173
+   └── Backend: Python running on port 8000
+
+2. Building (Create Containers)
+   ├── Frontend: Build React app → Package in Docker image
+   └── Backend: Package Python app in Docker image
+
+3. Deployment (Push to Cloud)
+   ├── Push Docker images to registry
+   ├── Start containers on cloud platform
+   └── Configure domain, SSL, environment variables
+
+4. Production (Live on Internet)
+   ├── Users access via your domain
+   ├── nginx serves frontend
+   └── Backend handles API requests
+```
 
 ---
 
